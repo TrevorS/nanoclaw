@@ -235,7 +235,10 @@ export async function processTaskIpc(
           }
           nextRun = new Date(Date.now() + ms).toISOString();
         } else if (scheduleType === 'once') {
-          const scheduled = new Date(data.schedule_value);
+          // Ensure UTC parsing: append 'Z' if no timezone indicator present
+          const rawValue = String(data.schedule_value);
+          const hasTimezone = /[Zz]|[+-]\d{2}:\d{2}$/.test(rawValue);
+          const scheduled = new Date(hasTimezone ? rawValue : rawValue + 'Z');
           if (isNaN(scheduled.getTime())) {
             logger.warn(
               { scheduleValue: data.schedule_value },
